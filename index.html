@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Intake Tracker</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #1e3a5f;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-text {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+
+  .glass-container {
+    position: relative;
+    width: 180px;
+    height: 300px;
+    margin-bottom: 2rem;
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .water {
+    transition: y 0.6s ease-in-out, height 0.6s ease-in-out;
+  }
+
+  .bubbles circle {
+    animation: rise 2s ease-in infinite;
+    opacity: 0;
+  }
+  .bubbles circle:nth-child(2) { animation-delay: 0.4s; }
+  .bubbles circle:nth-child(3) { animation-delay: 0.8s; }
+  .bubbles circle:nth-child(4) { animation-delay: 1.2s; }
+
+  @keyframes rise {
+    0%   { opacity: 0; transform: translateY(0); }
+    20%  { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(-60px); }
+  }
+
+  .buttons {
+    display: flex;
+    gap: 1rem;
+  }
+
+  button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  button:active {
+    transform: scale(0.96);
+  }
+
+  .btn-drink {
+    background: #0284c7;
+    color: white;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+  }
+
+  .btn-drink:hover {
+    background: #0369a1;
+  }
+
+  .btn-drink:disabled {
+    background: #94a3b8;
+    box-shadow: none;
+    cursor: default;
+  }
+
+  .btn-reset {
+    background: white;
+    color: #64748b;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .btn-reset:hover {
+    background: #f1f5f9;
+  }
+
+  .celebration {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0284c7;
+    margin-bottom: 1rem;
+    animation: pop 0.5s ease;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    70%  { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Water Intake Tracker</h1>
+<p class="progress-text"><span id="count">0</span> / <span id="goal">8</span> glasses</p>
+
+<div class="glass-container">
+  <svg viewBox="0 0 180 300">
+    <!-- Glass body -->
+    <path d="M30 30 L20 270 Q20 290 40 290 L140 290 Q160 290 160 270 L150 30 Z"
+          fill="none" stroke="#94a3b8" stroke-width="3" stroke-linejoin="round"/>
+
+    <!-- Clip path for water inside glass -->
+    <defs>
+      <clipPath id="glass-clip">
+        <path d="M31 31 L21 269 Q21 289 41 289 L139 289 Q159 289 159 269 L149 31 Z"/>
+      </clipPath>
+    </defs>
+
+    <!-- Water fill -->
+    <rect id="water" class="water" clip-path="url(#glass-clip)"
+          x="10" y="290" width="160" height="0"
+          fill="url(#water-gradient)" rx="4"/>
+
+    <!-- Water gradient -->
+    <defs>
+      <linearGradient id="water-gradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#38bdf8"/>
+        <stop offset="100%" stop-color="#0284c7"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Bubbles -->
+    <g class="bubbles" clip-path="url(#glass-clip)" id="bubbles" style="display:none;">
+      <circle cx="60"  cy="260" r="3" fill="rgba(255,255,255,0.5)"/>
+      <circle cx="100" cy="270" r="2" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="80"  cy="250" r="2.5" fill="rgba(255,255,255,0.5)"/>
+      <circle cx="120" cy="265" r="2" fill="rgba(255,255,255,0.3)"/>
+    </g>
+
+    <!-- Glass rim highlight -->
+    <path d="M32 30 L148 30" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+</div>
+
+<div id="celebration"></div>
+
+<div class="buttons">
+  <button class="btn-drink" id="drinkBtn" onclick="logDrink()">Log a Drink</button>
+  <button class="btn-reset" onclick="resetIntake()">Reset</button>
+</div>
+
+<script>
+  const GOAL = 8;
+  const STORAGE_KEY = 'waterIntake';
+
+  const waterEl = document.getElementById('water');
+  const countEl = document.getElementById('count');
+  const goalEl = document.getElementById('goal');
+  const drinkBtn = document.getElementById('drinkBtn');
+  const bubblesEl = document.getElementById('bubbles');
+  const celebrationEl = document.getElementById('celebration');
+
+  goalEl.textContent = GOAL;
+
+  function getCount() {
+    return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+  }
+
+  function setCount(n) {
+    localStorage.setItem(STORAGE_KEY, n);
+  }
+
+  function updateGlass(count) {
+    const pct = Math.min(count / GOAL, 1);
+    // Glass interior runs from y=31 (top) to y=289 (bottom), height ~258
+    const maxHeight = 258;
+    const waterHeight = pct * maxHeight;
+    const waterY = 289 - waterHeight;
+
+    waterEl.setAttribute('y', waterY);
+    waterEl.setAttribute('height', waterHeight);
+
+    countEl.textContent = count;
+    drinkBtn.disabled = count >= GOAL;
+    bubblesEl.style.display = count > 0 ? 'block' : 'none';
+
+    if (count >= GOAL) {
+      celebrationEl.className = 'celebration';
+      celebrationEl.textContent = 'Goal reached! Great job staying hydrated!';
+    } else {
+      celebrationEl.className = '';
+      celebrationEl.textContent = '';
+    }
+  }
+
+  function logDrink() {
+    let count = getCount();
+    if (count >= GOAL) return;
+    count++;
+    setCount(count);
+    updateGlass(count);
+  }
+
+  function resetIntake() {
+    setCount(0);
+    updateGlass(0);
+  }
+
+  // Init
+  updateGlass(getCount());
+</script>
+
+</body>
+</html>
