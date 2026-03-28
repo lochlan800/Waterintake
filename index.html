@@ -266,7 +266,6 @@
     waterEl.setAttribute('height', waterHeight);
 
     countEl.textContent = ml;
-    drinkBtn.disabled = ml >= GOAL;
     bubblesEl.style.display = ml > 0 ? 'block' : 'none';
 
     if (ml >= GOAL) {
@@ -280,7 +279,7 @@
 
   function addMl(amount) {
     let current = getCount();
-    current = Math.min(current + amount, GOAL);
+    current = current + amount;
     setCount(current);
     updateGlass(current);
     mlInput.value = '';
