@@ -1,0 +1,45 @@
+Getting Your Water Intake Tracker On Your Phone
+================================================
+
+What You've Built
+-----------------
+A water intake tracker web app. It's a single HTML page with a glass
+that fills up as you log water in ml.
+
+Where It Lives
+--------------
+Your code is on GitHub at lochlan800/Waterintake on the branch
+claude/water-intake-tracker-LMCBC.
+
+
+Step-by-Step: Getting It On Your Phone
+--------------------------------------
+
+Step 1: Merge the branch (on GitHub)
+
+  1. Go to github.com/lochlan800/Waterintake
+  2. You should see a banner saying the branch has recent pushes
+     — click "Compare & pull request"
+  3. Click "Create pull request", then "Merge pull request"
+  4. This puts your code on the main branch, which GitHub Pages needs
+
+
+Step 2: Turn on GitHub Pages
+
+  1. On your repo page, click Settings (top menu)
+  2. In the left sidebar, click Pages
+  3. Under "Source", select Deploy from a branch
+  4. Pick main branch, / (root) folder
+  5. Click Save
+  6. Wait 1-2 minutes — GitHub will give you a URL like:
+     https://lochlan800.github.io/Waterintake/
+
+
+Step 3: Open on your phone
+
+  1. Open that URL in your phone's browser
+  2. iPhone: tap the Share button (square with arrow)
+     > "Add to Home Screen"
+  3. Android: tap the 3-dot menu > "Install app"
+     or "Add to Home Screen"
+  4. Now it's on your home screen like a real app!
